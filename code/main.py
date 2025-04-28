@@ -1,6 +1,6 @@
 import pygame
-import config
-import resources
+import config #參數位置
+import resources #資源呼叫(圖片、音效)
 from pathlib import Path
 
 #初始化pygame 系統
@@ -21,7 +21,7 @@ pygame.display.set_icon(resources.load_icon_image())
 #視窗背景
 background = pygame.Surface(screen.get_size())
 background = background.convert()
-background.fill((250,250,250))
+background.fill((100,100,100))
 
 #設定迴圈讓視窗保持更新
 while config.running:
