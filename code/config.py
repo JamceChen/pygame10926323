@@ -4,11 +4,11 @@
 window_title = "戰鬥機遊戲"
 
 #建立視窗物件的寬跟高
-screenHigh = 1400
-screenWidth = 2000
+screenHigh = 600
+screenWidth = 1200
 
 #更新頻率
 fps = 120
-
+movingScale = 600/fps
 #設定迴圈變數
 running = True
