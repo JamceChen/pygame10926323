@@ -31,9 +31,9 @@ background.fill((100,100,100))
 #設定迴圈讓視窗保持更新
 while config.running:
     #從pygame事件佇列中一項項檢查
-    #for event in pygame.event.get():
-    #    if event.type == pygame.QUIT:
-    #        config.running = False
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            config.running = False
     
     screen.blit(background,(0,0))
     player.update()
