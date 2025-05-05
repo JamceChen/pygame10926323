@@ -28,13 +28,43 @@ background = pygame.Surface(screen.get_size())
 background = background.convert()
 background.fill((100,100,100))
 
+keyCountX = 0
+keyCountY = 0
 #設定迴圈讓視窗保持更新
 while config.running:
     #從pygame事件佇列中一項項檢查
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             config.running = False
-    
+
+        if event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_a:
+                keyCountX += 1
+                player.to_the_left()
+            if event.key == pygame.K_d:
+                keyCountX += 1
+                player.to_the_right()
+            if event.key == pygame.K_s:
+                keyCountY += 1
+                player.to_the_bottom()
+            if event.key == pygame.K_w:
+                keyCountY += 1
+                player.to_the_top()
+        
+        if event.type == pygame.KEYUP:
+            if event.key == pygame.K_a or event.key == pygame.K_d:
+                if keyCountX == 1:
+                    keyCountX = 0
+                    player.stop_x()
+                else:
+                    keyCountX -= 1
+            if event.key == pygame.K_s or event.key == pygame.K_w:
+                if keyCountY == 1:
+                    keyCountY = 0
+                    player.stop_y()
+                else:
+                    keyCountY -= 1
+        
     screen.blit(background,(0,0))
     player.update()
     screen.blit(player._image, (player.x, player.y))

@@ -4,7 +4,7 @@
 window_title = "戰鬥機遊戲"
 
 #建立視窗物件的寬跟高
-screenHigh = 600
+screenHigh = 760
 screenWidth = 1200
 
 #更新頻率
