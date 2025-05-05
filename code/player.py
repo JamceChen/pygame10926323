@@ -7,9 +7,9 @@ import math
 
 class Player(GameObject):
     #建構式， playground為必要參數
-    def __init__(self, playground, xy = None, senitivity = 1, scale_factor = 0.3):
+    def __init__(self, playground, xy = None, sensitivity = 1, scale_factor = 0.3):
         GameObject.__init__(self, playground)
-        self._moveScale = 0.5 * senitivity
+        self._moveScale = 0.5 * sensitivity
         __parent_path = Path(__file__).parents[1]
         self.__player_path = __parent_path/'assets'/'images'/'airforce.png'
         self._image = pygame.image.load(self.__player_path)
@@ -22,7 +22,7 @@ class Player(GameObject):
         new_height = int(original_height * scale_factor)
         
         # 縮放圖片
-        self._image = pygame.transform.scale(self._image, (new_width, new_height))
+        self._image = pygame.transform.smoothscale(self._image, (new_width, new_height))
         if xy is None:
             self._x = (self._playground[0] - self._image.get_rect().w)/2
             self._y = 3 * self._playground[1]/4
@@ -30,7 +30,7 @@ class Player(GameObject):
             self._x = xy[0]
             self._y = xy[1]
 
-            self._objectBound = (10, self._playground[0] - (self._image.get_rect().w+10),10,self._playground[1]-(self._image.get_rect().h+10))
+        self._objectBound = (10, self._playground[0] - (self._image.get_rect().w+10),10,self._playground[1]-(self._image.get_rect().h+10))
 
     
 
@@ -45,6 +45,6 @@ class Player(GameObject):
                 self._collided = True
                 m.hp = -1
                 m.collided = True
-                m.available = False
+                m.availble = False
     
     

@@ -5,7 +5,7 @@ from pathlib import Path
 import math
 from gameobject import GameObject
 from player import Player
-
+from mymissile import MyMissile
 
     
 #初始化pygame 系統
@@ -16,7 +16,7 @@ playground = [config.screenWidth,config.screenHigh]
 screen = pygame.display.set_mode((config.screenWidth,config.screenHigh))
 
 clock = pygame.time.Clock()
-player = Player(playground=playground, senitivity=config.movingScale)
+player = Player(playground=playground, sensitivity=config.movingScale)
 #tilte
 pygame.display.set_caption(config.window_title)
 
@@ -30,6 +30,9 @@ background.fill((100,100,100))
 
 keyCountX = 0
 keyCountY = 0
+
+Missiles = []
+
 #設定迴圈讓視窗保持更新
 while config.running:
     #從pygame事件佇列中一項項檢查
@@ -50,7 +53,14 @@ while config.running:
             if event.key == pygame.K_w:
                 keyCountY += 1
                 player.to_the_top()
-        
+
+            if event.key == pygame.K_SPACE:
+                m_x = player._x - 50
+                m_y = player._y
+                Missiles.append(MyMissile(xy = (m_x,m_y),playground=playground, sensitivity=config.movingScale))
+                m_x = player.x + 40
+                Missiles.append(MyMissile(playground, (m_x,m_y),config.movingScale)) #若未指定參數需按照宣告順序
+
         if event.type == pygame.KEYUP:
             if event.key == pygame.K_a or event.key == pygame.K_d:
                 if keyCountX == 1:
@@ -66,13 +76,18 @@ while config.running:
                     keyCountY -= 1
         
     screen.blit(background,(0,0))
+    Missiles = [item for item in Missiles if item._availble]
+    for m in Missiles:
+        m.update()
+        screen.blit(m._image,(m.x+3, m.y))
+
     player.update()
     screen.blit(player._image, (player.x, player.y))
     #更新螢幕狀態
     pygame.display.update()
 
     #每秒更新fps次
-    dt = clock.tick(config.fps)
+    dt = clock.tick(config.fps) 
 
 #關閉視窗
 pygame.quit()
