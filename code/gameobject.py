@@ -14,7 +14,7 @@ class GameObject:
         self._x = 0 #貼圖位置
         self._y = 0
         self._moveScale = 1 #移動計量值
-        self._hp = 1
+        self._hp = 10
         self._image = None
         self._availble = True #有效物件
         self._center = None
@@ -61,8 +61,8 @@ class GameObject:
         self._changeY = 0
 
     def update(self):
-        self.x += self._changeX
-        self.y += self._changeY
+        self._x += self._changeX
+        self._y += self._changeY
 
         if self._x > self._objectBound[1]:
             self._x = self._objectBound[1]

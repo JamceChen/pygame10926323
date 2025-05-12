@@ -7,3 +7,4 @@ import pygame
 def load_icon_image():
     icon_path = Path(__file__).parent.parent/ 'assets' / 'images' / 'icon.png'
     return pygame.image.load(str(icon_path))
+

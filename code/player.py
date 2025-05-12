@@ -15,7 +15,7 @@ class Player(GameObject):
         self._image = pygame.image.load(self.__player_path)
         self._center = self._x + self._image.get_rect().w/2, self._y + self._image.get_rect().h/2
         self._radius = 0.3 * math.hypot(self._image.get_rect().w, self._image.get_rect().h)
-
+        self._hp = 1
         original_width = self._image.get_rect().width
         original_height = self._image.get_rect().height
         new_width = int(original_width * scale_factor)
