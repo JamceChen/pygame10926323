@@ -2,8 +2,9 @@ from pathlib import Path
 import pygame
 from gameobject import GameObject
 
-
+#飛彈類別
 class MyMissile(GameObject):
+    #建構式
     def __init__(self,playground,xy,sensitivity = 1, scale_factor = 0.1):
         GameObject.__init__(self, playground)
         __parent_path = Path(__file__).parents[1]
