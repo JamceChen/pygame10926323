@@ -1,97 +1,132 @@
 import pygame
-import config #參數位置
-import resources #資源呼叫(圖片、音效)
 from pathlib import Path
-import math
-import random
-from gameobject import GameObject
 from player import Player
 from mymissile import MyMissile
 from enemy import Enemy
+import random
+from explosion import Explosion
 
-    
-#初始化pygame 系統
+#初始化pygame系統
 pygame.init()
 
-#建立視窗物件的寬跟高
-playground = [config.screenWidth,config.screenHigh]
-screen = pygame.display.set_mode((config.screenWidth,config.screenHigh))
+parent_path = Path(__file__).parents[1]
+image_path = parent_path /'assets' /'images'
+icon_path = image_path /'icon.png'
+background_path = image_path /'background.png'
+gameover_path = image_path /'gameover.png'
 
-clock = pygame.time.Clock()
-player = Player(playground=playground, sensitivity=config.movingScale)
-
-#tilte
-pygame.display.set_caption(config.window_title)
-
-#icon圖片
-pygame.display.set_icon(resources.load_icon_image())
-
-#視窗背景
-background = pygame.Surface(screen.get_size())
-background = background.convert()
-background.fill((100,100,100))
-
+#建立視窗物件，寬、高、參數
+screenHigh = 760
+screenWidth = 1000
+playground = [screenWidth, screenHigh]
+screen = pygame.display.set_mode((screenWidth, screenHigh))
+running = True
+fps = 120 #更新頻率，包含畫面更新與事件更新
+movingScale = 600/fps #大約600 像素/秒
+clock = pygame.time.Clock() #創建一個物件來幫助追蹤時間
+player = Player(playground = playground, sensitivity = movingScale)
 keyCountX = 0
-keyCountY = 0
-
+keyCountY = 0 #計算案件被按下的次數
 #建立物件串列
 Missiles = []
-enemies = []  
-
+Enemies = []
+Boom = []
 #建立事件編號
 launchMissile = pygame.USEREVENT + 1
-spawnEnemy = pygame.USEREVENT + 100  # 新增敵人生成事件
+spawnEnemy = pygame.USEREVENT + 2
 
-# 設定敵人產生計時器，每1.5秒產生一個敵人
-pygame.time.set_timer(spawnEnemy, 150)
+#Title, icon, and Background
+pygame.display.set_caption("戰鬥機")
+icon = pygame.image.load(icon_path) #載入圖示
+pygame.display.set_icon(icon)
+background = pygame.image.load(background_path).convert()
+gameover = pygame.image.load(gameover_path).convert()
 
-# 分數
-score = 0
-font = pygame.font.SysFont(None, 36)
+# 設定字體
+font = pygame.font.Font(None, 36)  # None 使用預設字體，36 是字體大小
 
-#設定迴圈讓視窗保持更新
-while config.running:
-    #從pygame事件佇列中一項項檢查
+# 設定敵人生成計時器
+pygame.time.set_timer(spawnEnemy, 1000)  # 每1秒生成一個敵人
+
+#設定無窮迴圈，讓視窗保持更新與執行
+while running:
+    #從pygame事件佇列中，一項一項檢查
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
-            config.running = False
+            running = False
+        
+        # 如果玩家死亡，只處理退出事件
+        if player._hp <= 0:
+            continue
 
+        #飛彈連續發射設定
         if event.type == launchMissile:
-            m_x = player._x - 50
+            m_x = player._x - 100
             m_y = player._y
-            Missiles.append(MyMissile(xy=(m_x, m_y), playground=playground,sensitivity=config.movingScale))
-            m_x = player._x + 40
-            Missiles.append(MyMissile(xy=(m_x, m_y), playground=playground,sensitivity=config.movingScale))
+            Missiles.append(
+                MyMissile(
+                    xy = (m_x, m_y), 
+                    playground = playground, 
+                    sensitivity = movingScale
+                )
+            )
+            m_x = player._x - 10
+            Missiles.append(
+                MyMissile(
+                    xy = (m_x, m_y), 
+                    playground = playground, 
+                    sensitivity = movingScale
+                )
+            )
 
+        # 敵人生成事件
         if event.type == spawnEnemy:
-            # 產生敵人在隨機的x位置
-            enemy_x = random.randint(0, config.screenWidth - 50)  # 假設敵人寬度約50
-            enemies.append(Enemy(playground=playground, xy=(enemy_x, -50), sensitivity=config.movingScale))
+            enemy_x = random.randint(0, screenWidth - 50)  # 敵人寬度50
+            Enemies.append(
+                Enemy(
+                    playground = playground, 
+                    xy = (enemy_x, -50),
+                    sensitivity = movingScale
+                )
+            )
 
         if event.type == pygame.KEYDOWN:
-            if event.key == pygame.K_a:
+            if event.key == pygame.K_a: #'a','A',左移
                 keyCountX += 1
                 player.to_the_left()
 
-            if event.key == pygame.K_d:
+            if event.key == pygame.K_d: #'d','D',右移
                 keyCountX += 1
                 player.to_the_right()
 
-            if event.key == pygame.K_s:
+            if event.key == pygame.K_s: #'s','S',下移
                 keyCountY += 1
                 player.to_the_bottom()
-                
-            if event.key == pygame.K_w:
+
+            if event.key == pygame.K_w: #'w','W',上移
                 keyCountY += 1
                 player.to_the_top()
 
+            #飛彈普通發射設定
             if event.key == pygame.K_SPACE:
-                m_x = player._x - 50
-                m_y = player._y
-                Missiles.append(MyMissile(xy = (m_x,m_y),playground=playground, sensitivity=config.movingScale))
-                m_x = player._x + 40  # 修正: player.x -> player._x
-                Missiles.append(MyMissile(playground=playground, xy=(m_x,m_y), sensitivity=config.movingScale))  # 修正參數順序和命名
-                pygame.time.set_timer(launchMissile,400) #之後每400ms發射一組
+                m_x = player._x - 100
+                m_y = player._y 
+                Missiles.append(
+                    MyMissile(
+                        xy = (m_x, m_y), 
+                        playground = playground, 
+                        sensitivity = movingScale
+                    )
+                )
+                m_x =player._x - 10
+                Missiles.append(
+                    MyMissile(
+                        xy = (m_x, m_y), 
+                        playground = playground, 
+                        sensitivity = movingScale
+                    )
+                ) #若為指定參數，需按照宣告順序
+                pygame.time.set_timer(launchMissile, 400) #之後每400ms發射一組
 
         if event.type == pygame.KEYUP:
             if event.key == pygame.K_a or event.key == pygame.K_d:
@@ -100,93 +135,62 @@ while config.running:
                     player.stop_x()
                 else:
                     keyCountX -= 1
-
             if event.key == pygame.K_s or event.key == pygame.K_w:
                 if keyCountY == 1:
                     keyCountY = 0
                     player.stop_y()
                 else:
                     keyCountY -= 1
-
             if event.key == pygame.K_SPACE:
                 pygame.time.set_timer(launchMissile, 0) #停止發射
-    
-    # 更新玩家
-    player.update()
-    
-    # 更新並檢查子彈邊界，移除超出邊界的子彈
-    available_missiles = []
-    for missile in Missiles:
-        missile.update()
-        if missile._availble:  # 檢查子彈是否仍然可用
-            available_missiles.append(missile)
-    Missiles = available_missiles
-    
-    # 更新並檢查敵人
-    available_enemies = []
-    for enemy in enemies:
-        enemy.update()
-        
-        # 檢查敵人是否碰到底部邊界
-        if enemy._y > config.screenHigh:
-            enemy.availble = False 
-        
-        # 檢查敵人與玩家碰撞
-        dx = enemy._center[0] - player._center[0]
-        dy = enemy._center[1] - player._center[1]
-        distance = math.sqrt(dx*dx + dy*dy)
-        if distance < (enemy._radius + player._radius):
-            enemy.availble = False
-            player._hp -= 1  # 玩家受傷
-            if player._hp <= 0:
-                gameover_path = Path(__file__).parents[1]/'assets'/'images'/'gameover.png'
-                over_image = pygame.image.load(gameover_path)
-                screen.blit(over_image, (0, 0))
-                
-        
-        # 檢查敵人與子彈碰撞
-        for missile in Missiles:
-            dx = enemy._center[0] - missile._center[0]
-            dy = enemy._center[1] - missile._center[1]
-            distance = math.sqrt(dx*dx + dy*dy)
-            if distance < (enemy._radius + missile._radius):
-                enemy.availble = False
-                missile._availble = False
-                score += 100  # 擊中敵人加分
-                break
-        
-        if enemy.availble:  # 如果敵人仍然可用，保留在列表中
-            available_enemies.append(enemy)
-    
-    enemies = available_enemies  # 更新敵人列表
-    
-    # 繪製畫面
-    screen.blit(background,(0,0))
-    
-    # 繪製分數
-    #score_text = font.render(f"Score: {score}", True, (255, 255, 255))
-    #screen.blit(score_text, (10, 10))
-    
-    # 繪製玩家生命值
-    #hp_text = font.render(f"HP: {player._hp}", True, (255, 255, 255))
-    #screen.blit(hp_text, (10, 50))
-    
-    # 繪製子彈
-    for missile in Missiles:
-        screen.blit(missile._image, (missile._x, missile._y))
-    
-    # 繪製敵人
-    for enemy in enemies:
-        screen.blit(enemy._image, (enemy._x, enemy._y))
-    
-    # 繪製玩家
-    screen.blit(player._image, (player._x, player._y))
-    
-    # 更新螢幕狀態
-    pygame.display.update()
 
-    # 每秒更新fps次
-    dt = clock.tick(config.fps) 
+    screen.blit(background, (0, 0)) #更新背景圖片
+    Missiles = [item for item in Missiles if item._available]
+    Enemies = [item for item in Enemies if item._available]
+    Boom = [item for item in Boom if item._available]
+    # 如果玩家還活著，繼續遊戲
+    if player._hp > 0:
+        #繪製子彈
+        for m in Missiles:
+            m.update()
+            screen.blit(m._image, (m._x, m._y))
+            # 檢測子彈與敵人的碰撞
+            m.collision_detect(Enemies)
+            if m._collided:
+                #Boom.append(Explosion(xy=(m._x + m._image.get_rect().width/2, m._y + m._image.get_rect().height/2), scale_factor=0.3))
+                pass
 
-# 關閉視窗
-pygame.quit()
+        #繪製敵人
+        for e in Enemies:
+            e.update()
+            screen.blit(e._image, (e._x, e._y))
+            # 檢測敵人與玩家的碰撞
+            player.collision_detect([e])
+            if e._collided:
+                Boom.append(Explosion(xy=(e._x, e._y)))
+
+        #繪製爆炸
+        for e in Boom:
+            e.update()
+            screen.blit(e._image, (e._x, e._y))
+
+        #繪製玩家
+        player.update() #更新player狀態
+        screen.blit(player._image, (player._x, player._y))
+        
+        # 顯示血量
+        hp_text = font.render(f"HP: {player._hp}", True, (255, 255, 255))
+        screen.blit(hp_text, (10, 10))
+        
+    else:
+        # 顯示遊戲結束畫面
+        screen.blit(gameover, (
+            screenWidth//2 - gameover.get_width()//2, 
+            screenHigh//2 - gameover.get_height()//2)
+            )
+    
+
+    pygame.display.update() #更新螢幕狀態
+    dt =clock.tick(fps) #每秒更新fps次
+
+pygame.quit() #關閉繪圖視窗
