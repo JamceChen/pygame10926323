@@ -157,7 +157,6 @@ while running:
             # 檢測子彈與敵人的碰撞
             m.collision_detect(Enemies)
             if m._collided:
-                #Boom.append(Explosion(xy=(m._x + m._image.get_rect().width/2, m._y + m._image.get_rect().height/2), scale_factor=0.3))
                 pass
 
         #繪製敵人
