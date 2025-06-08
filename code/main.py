@@ -55,7 +55,7 @@ pygame.display.set_icon(icon)
 background = pygame.image.load(background_path).convert()
 gameover = pygame.image.load(gameover_path).convert()
 shield_image = pygame.image.load(image_path / 'shield.png')
-shield_image = pygame.transform.smoothscale(shield_image, (30, 30))  # 縮放護盾圖示
+shield_image = pygame.transform.smoothscale(shield_image, (40, 40))  # 調整護盾圖示大小為正方形
 
 # 設定字體
 font = pygame.font.Font(None, 36)  # None 使用預設字體，36 是字體大小
@@ -249,7 +249,7 @@ while running:
         
         # 顯示分數
         score_text = font.render(f"Score: {player._score}", True, (255, 255, 255))
-        screen.blit(score_text, (10, 90))
+        screen.blit(score_text, (10, 30))
         
         # 顯示護盾狀態
         if player._has_shield:
