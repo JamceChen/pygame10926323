@@ -6,17 +6,16 @@ from gameobject import GameObject
 import math
 import random
 
-#玩家類別
-class Enemy(GameObject):
+#石頭類別
+class Rock(GameObject):
     #建構式，playground 為必要參數
-    def __init__(self, playground, xy = None, sensitivity = 1, scale_factor = 0.2):
+    def __init__(self, playground, xy = None, sensitivity = 1, scale_factor = 0.1):
         GameObject.__init__(self, playground)
         self._moveScale = 0.5 * sensitivity
         __parent_path = Path(__file__).parents[1]
-        # 隨機選擇敵人圖片
-        enemy_number = random.randint(0, 3)
-        self.__enemy_path = __parent_path /'assets' /'images' /f'enemy{enemy_number}.png'
-        self._image = pygame.image.load(self.__enemy_path)
+        # 石頭圖片
+        self.__rock_path = __parent_path /'assets' /'images' /'rock.png'
+        self._image = pygame.image.load(self.__rock_path)
 
         # 縮放圖片
         original_width = self._image.get_rect().width
@@ -70,17 +69,9 @@ class Enemy(GameObject):
             self._x = self._objectBound[1] #修正位置，變免卡在邊界
             self._vx = -self._vx #水平反彈
         
-        #如果敵人超出下邊界，設為不可用
+        #如果石頭超出下邊界，設為不可用
         if self._y > self._objectBound[3]:
             self._available = False
         
         #更新中心點
         self._center = self._x + self._image.get_rect().w/2, self._y + self._image.get_rect().h/2
-    
-    #碰撞偵測(與其他物件)
-    def collision_detect(self, enemies):
-        for m in enemies:
-            if self._collided_(m):
-                self._collided = True
-                self._available = False
-                m._collided = True

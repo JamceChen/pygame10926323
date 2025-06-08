@@ -3,6 +3,8 @@ from typing import Union
 import pygame
 from pygame.surface import Surface, SurfaceType
 from gameobject import GameObject
+from shield import Shield
+from rock import Rock
 import math
 
 #玩家類別
@@ -34,6 +36,8 @@ class Player(GameObject):
             self._y = xy[1]
         
         self._hp = 100
+        self._score = 0  # 新增分數屬性
+        self._has_shield = False  # 新增護盾狀態
         self._center = self._x + self._image.get_rect().w/2, self._y + self._image.get_rect().h/2
         self._radius = 0.3 * math.hypot(
             self._image.get_rect().w, 
@@ -54,8 +58,24 @@ class Player(GameObject):
     def collision_detect(self, enemies):
         for m in enemies:
             if self._collided_(m):
-                self._hp -= 10
-                self._collided = True
-                m._hp = -1
-                m._collided = True
-                m._available = False
+                if isinstance(m, Shield):  # 如果是護盾
+                    self._has_shield = True
+                    m._available = False
+                    m._collided = True
+                    Shield.shield_sound.play()  # 播放獲得護盾音效
+                elif isinstance(m, Rock):  # 如果是石頭
+                    if self._has_shield:
+                        self._has_shield = False
+                        Shield.shield_break_sound.play()  # 播放護盾破壞音效
+                    else:
+                        self._hp -= 20
+                    m._available = False
+                    m._collided = True
+                else:  # 如果是普通敵人
+                    if self._has_shield:
+                        self._has_shield = False
+                        Shield.shield_break_sound.play()  # 播放護盾破壞音效
+                    else:
+                        self._hp -= 10
+                    m._available = False
+                    m._collided = True

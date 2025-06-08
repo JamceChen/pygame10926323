@@ -7,6 +7,7 @@ import pygame
 class Explosion(GameObject):
 
     explosion_effect = []
+    explosion_sound = None
 
     #建構式
     def __init__(self, xy = None, scale_factor = 0.8):
@@ -18,6 +19,14 @@ class Explosion(GameObject):
         else:
             self._x = xy[0]
             self._y = xy[1]
+
+        # 載入爆炸音效
+        if Explosion.explosion_sound is None:
+            __parent_path = Path(__file__).parents[1]
+            sound_path = __parent_path / 'assets' / 'sound' / 'expl0.wav'
+            Explosion.explosion_sound = pygame.mixer.Sound(sound_path)
+            Explosion.explosion_sound.set_volume(0.4)  # 設定音量為 40%
+        Explosion.explosion_sound.play()
 
         if Explosion.explosion_effect:
             pass
